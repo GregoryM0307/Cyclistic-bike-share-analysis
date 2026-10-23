@@ -1,0 +1,1293 @@
+---
+title: "Cyclistic Case Study: Annual Members vs. Casual Riders"
+author: "Gregory Murdoch"
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    code-fold: true
+    fig-format: svg
+    fig-dpi: 96
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+  message: false
+  freeze: false
+---
+
+::: {.callout-note}
+This report was generated using AI under general human direction. At the time of generation, the contents have not been comprehensively reviewed by a human analyst.
+
+<!--
+To indicate human review: Delete the line above about contents not being reviewed, and replace this comment with:
+The contents have been reviewed and validated by [Your Name], [Your Role] on [Date].
+-->
+:::
+# Executive Summary
+
+## Introduction
+
+HI, my name is Gregory Murdoch, and I would like to Welcome you to my Cyclistic bike-share analysis case study! In this project, I worked with a fictional company, Cyclistic, and key team members to answer business questions. This case study analyzed Cyclistic bike-share usage patterns to understand how annual members and casual riders use the service differently. Using Exceland R. I analyzed ride frequency, ride duration, weekday versus weekend usage, bike type, seasonality, and station behavior. This analysis will identify behavioral differences between the two rider groups and provide recommendations to help Cyclistic convert more casual riders into annual members In order to answer thebusiness questions, follow the steps of the data analysis process: Ask, Prepare, Process,Analyze, Share, and Act. Along the way, the Case Study Roadmap tables — including guidin questions and key tasks — will help me stay on the right path
+
+Cyclistic is a Chicago bike-share program with two types of riders: annual **members** and **casual** riders who purchase single-ride or day passes. This report investigates the case study's central business question: *how do annual members and casual riders use Cyclistic bikes differently?* Understanding these differences can inform marketing strategies aimed at converting casual riders into annual members.
+
+This analysis uses 13 months of Divvy trip data (April 2020 through April 2021, Chicago), combined from Divvy's monthly public data files (~3.8M rides total). An earlier version of this report used November 2020 alone; that single-month analysis is superseded here, since the full year makes it possible to check whether patterns generalize across seasons rather than assuming they do.
+
+##  Cyclistic Bike-Share Case Study Phases
+
+#  Ask
+“Understanding how annual members and casual riders differ begins with asking focused, business-driven questions that guide the entire analysis.”
+
+
+## Guiding questions
+
+## What is the problem you are trying to solve?
+Casual riders are not converting into annual members at a high enough rate.
+##  How can your insights drive business decisions?
+“My insights should help the company target the right users, at the right time, with the right pricing and messaging—ultimately increasing membership conversions and driving predictable, long-term revenue growth.
+
+# Key tasks
+##   Identify the business task
+Analyze behavioral differences between annual members and casual riders to increase membership conversion.
+● Consider key stakeholders
+- Marketing Director
+ - Analytics Team
+ - Executive Leadership
+ 
+## Business Objective (SMART)
+A reasonable target would be to Increase the conversion rate of casual riders to annual members by 20% within 12 months through data-driven marketing strategies
+Deliverable
+● A clear statement of the business task
+Increase conversion of casual riders to annual members by identifying behavioral differences and targeting high-impact segments.
+
+# Prepare
+“Preparation is where insight begins—when your data is organized, cleaned, and understood, every decision that follows becomes sharper, faster, and more meaningful.
+
+
+## Case Study Roadmap - Prepare
+
+Guiding questions
+● Where is your data located?
+The data is from Cyclistic’s historical trip records, covering the past 12 months, provided as public datasets by Motivate International Inc. Start by clearly identifying source + storage.
+Example (Bike-Share Case Study):
+•	Public dataset from: Divvy Bikes 
+•	Hosted on: Google BigQuery / Kaggle / CSV download 
+•	Stored locally in: 
+o	/Data/Raw/ (original files – untouched) 
+o	/Data/Clean/ (processed files) 
+Best Practice:
+•	Never overwrite raw data 
+•	Keep version control (e.g., v1, v2)
+
+● How is the data organized?
+The data is organized by trip details such as start/end times, bike IDs, station locations, and rider types (casual or member). Describe structure + format.
+Example:
+•	Format: CSV files (monthly trip data) 
+•	Structure: Tabular (rows = rides, columns = attributes) 
+Key Columns:
+•	ride_id (unique ID) 
+•	rideable_type 
+•	started_at / ended_at (timestamps) 
+•	start_station / end_station 
+•	lat/long 
+•	member_casual 
+Explanation:
+This structure supports:
+•	Time-based analysis 
+•	User segmentation 
+•	Geographic insight
+
+● Are there issues with bias or credibility in this data? Does your data ROCCC?
+The data is credible and publicly available, but it may have bias since it only includes users of Cyclistic bikes, not all bike riders in Chicago. ROCCC (Reliable, Original, Comprehensive, Current, and Cited) applies mostly, but personal data is excluded for privacy. Use the ROCCC framework:
+Criteria	Evaluation
+Reliable	Yes – comes from a real bike-share system
+Original	Yes – primary operational data
+Comprehensive	Mostly – includes trips, but limited demographics
+Current	Depends on dataset (e.g., 2020 may be outdated)
+Cited	Yes – publicly documented dataset
+Conclusion Example:
+The dataset meets most ROCCC criteria, though it lacks demographic detail and may reflect seasonal bias.
+
+● How are you addressing licensing, privacy, security, and accessibility?
+The data is licensed for public use under Motivate International Inc. Riders’ personal information is excluded to protect privacy. Data is stored securely and shared with appropriate access
+● How did you verify the data’s integrity?
+By checking for missing values, duplicates, and inconsistencies during data cleaning and preparation
+● How does it help you answer your question?
+It provides insights into usage patterns of casual vs. annual members, helping design marketing strategies to convert casual riders.
+● Are there any problems with the data?
+Limitations include lack of personal identifiers, potential sampling bias, and no direct link between passes and individual riders. As I did a cursory view of the files I found that Certain months have  large amounts of missing values. Keep the Rows (Recommended)
+My focus is:
+•	Ride duration 
+•	User behavior 
+•	Trends over time 
+And as such I Just labelled missing values: Unknown
+Trips with missing end station information were retained, as they likely represent dockless or flexible ride endings. These records were  included in behavioral analysis, but excluded from station-based and route-level analysis.
+Key tasks
+● Download data and store it appropriately.	
+● Identify how it’s organized.
+● Sort and filter the data.
+● Determine the credibility of the data.
+Deliverable
+● A description of all data sources used
+
+2. Identify how it’s organized
+What you do:	
+You examine the structure of the dataset before touching anything.
+What to check:
+•	Each row = one ride/trip 
+•	Each column = a variable (time, station, user type, etc.) 
+•	Key fields: 
+o	ride_id 
+o	started_at 
+o	ended_at 
+o	member_casual 
+o	start_station_name 
+o	end_station_name
+
+You explore the structure of the dataset.
+How to accomplish it (Excel / R):
+•	Check column names: 
+o	ride_id 
+o	start_time 
+o	end_time 
+o	start_station_name 
+o	member_casual 
+•	Check data types: 
+o	Dates → datetime 
+o	IDs → text 
+o	Duration → numeric (if calculated)
+Tools you can use:
+R:
+str(data)
+glimpse(data)
+head(data)
+Excel:
+•	View column headers 
+•	Use filter dropdowns 
+•	Check data types (dates, text, numbers) 
+Goal:
+Understand structure BEFORE cleaning or analysis.
+3. Sort and filter the data
+This helps you detect errors, patterns, and outliers early.
+What you do:
+•	Sort ride duration (longest → shortest) 
+•	Filter out: 
+o	Blank values 
+o	Negative ride durations 
+o	Missing station IDs 
+o	Extremely long rides (possible errors) 
+Example in R:
+data <- data %>%
+  mutate(ride_length = ended_at - started_at)
+
+data <- data %>%
+  filter(ride_length > 0)
+In Excel:
+•	Apply filters on each column 
+•	Sort by “ride length” or “start time” 
+•	Remove blank rows 
+________________________________________
+4. Determine the credibility of the data
+This is where you justify why your dataset is trustworthy.
+Use the ROCCC framework:
+•	R – Reliable: Data is consistent and collected systematically 
+•	O – Original: Comes directly from Cyclistic/Divvy system 
+•	C – Comprehensive: Includes trip duration, user type, stations, timestamps 
+•	C – Current: Updated monthly (recent data used) 
+•	C – Cited: Publicly documented dataset with clear source 
+Example evaluation (portfolio-ready):
+The Cyclistic trip dataset is reliable and originates from the official bike-share system. It is comprehensive, containing trip duration, station locations, and user types. The dataset is updated monthly and is publicly accessible, ensuring transparency and credibility.
+Deliverable – Description of All Data Sources Used
+Example Portfolio Write-Up:
+Data Source Description
+This analysis uses publicly available Cyclistic bike-share trip data provided by the city of Chicago’s Divvy system. The dataset includes monthly trip records containing information such as ride ID, start and end times, station names, bike type, and user membership type (casual or member).
+The data is structured in a tabular format where each row represents a single ride and each column represents a specific attribute of that ride. The dataset is updated on a monthly basis and covers a full year of trip activity, allowing for seasonal and behavioral analysis.
+All data used in this case study is anonymized, ensuring no personally identifiable information is included. This makes the dataset appropriate for public analysis and aligns with open data licensing standards0257+
+
+# Context (What is Cyclistic)
+Cyclistic launched its bike-share program in 2016 and has grown to 5,824 bikes across 692 Chicago stations. Bikes can be unlocked and returned at any station. The marketing strategy so far focused on broad awareness with flexible pricing: single-ride, full-day passes (casual riders), and annual memberships (members). Finance analysts found annual members are more profitable.
+
+# Business problem
+The business problem is that Cyclistic relies on casual riders who contribute less predictable revenue. My task is to analyze behavioral differences between casual and annual members, generate insights, and recommend marketing strategies to convert casual users into members, supported by professional data visualizations for executive approval.
+
+# Business Question
+
+This is one of the key questions I was tasked with answering in the scenario:
+
+How do annual members and casual riders use Cyclistic bikes differently, and how can these differences be used to increase annual membership?
+From a business context perspective, here are a few questions that I would ask the key stakeholders as a backdrop to my case study:
+
+# Goals & Strategy
+
+- What specific business goal is most important right now: increasing membership, improving retention, or boosting ride frequency?
+- Are there quarterly or annual KPIs leadership focused on?
+- This question would be for future case-study: Is there opportunity to use online surveys as additional source of behavioral patterns?
+
+# Major findings
+
+1. Casual riders tend to take longer rides, especially on weekends.
+2. Members ride more frequently, with consistent weekday usage (likely for commuting).
+3. Casual riders show strong seasonal peaks (summer, holidays), while members are steady year-round.
+
+# Actionable recommendations
+
+1. Recommendation 1 — Weekend Membership Campaign
+2. Recommendation 2 — Convert High-Frequency Casual Riders
+3. Recommendation 3 — Promote Membership Around Seasonal Usage
+
+I will proceed to the next page that will include the Ask phase of the data analyst cycle. This will be guided by a road map that will keep the case study structured and easy to follow.
+
+## Methodology / questions addressed
+
+This report is organized around one central business question, broken into a series of more specific questions:
+
+**Central business question**
+
+1. How do annual members and casual riders use Cyclistic bikes differently?
+
+**Data preparation**
+
+2. Are there data-quality issues (negative or implausibly long ride durations) that need to be excluded or flagged?
+3. Do the monthly source files share the same schema (column names and types), so they can be safely combined into one dataset?
+
+**Ride volume and duration**
+
+4. How many rides does each rider type generate, and how long are their trips on average?
+
+**Seasonality**
+
+5. Does ride volume and the casual share of riders vary by month or season?
+
+**Temporal patterns**
+
+6. Does ridership differ by day of week between members and casual riders?
+7. Does ridership differ by hour of day, and does that differ between weekdays and weekends?
+8. Do the day-of-week and hour-of-day patterns hold across all four seasons, or are they specific to a single month?
+
+**Station geography**
+
+9. Which stations are most popular for each rider type, and do they differ?
+10. How often do riders return to their starting station (round trips), and does that differ by rider type?
+11. What is the spatial distribution of ridership and casual/member mix across the city?
+12. Do the round-trip rate and top-station patterns hold across seasons, or do they shift (e.g., in winter)?
+
+**Follow-up question raised but not answerable with this data**
+
+13. Are winter casual riders actually near-daily/frequent users close to converting to membership? This cannot be tested with Divvy's public trip data, since each ride has a unique `ride_id` but no persistent rider identifier linking multiple trips to the same person.
+
+**Open questions not pursued in this report**
+
+14. Do the stations popular with both rider types (e.g., Clark St & Elm St, Theater on the Lake) represent a distinct, mixed-use rider segment?
+15. Would the winter casual-rider pattern replicate in additional winters, or is it specific to the one winter in this dataset?
+
+```{r}
+#| label: load-packages
+#| message: false
+#| warning: false
+required_packages <- c("readr", "dplyr", "lubridate", "ggplot2", "ggrepel", "arrow", "tidyr", "janitor", "leaflet", "htmltools")
+missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
+
+library(tidyverse)
+library(lubridate)
+library(scales)
+
+# Create example campaign data
+campaign_data <- tibble(
+  customer_id = c("C001", "C002", "C003", "C004", "C005"),
+  campaign = c(
+    "Spring Offer", "Spring Offer",
+    "Weekend Promo", "Weekend Promo",
+    "Summer Offer"
+  ),
+  targeted = c(TRUE, TRUE, TRUE, FALSE, TRUE),
+  campaign_date = as.Date(c(
+    "2026-04-01", "2026-04-01",
+    "2026-04-05", "2026-04-05",
+    "2026-05-01"
+  )),
+  membership_date = as.Date(c(
+    "2026-04-12", NA,
+    "2026-04-20", NA,
+    "2026-05-15"
+  ))
+)
+
+# Define the conversion window
+follow_up_days <- 30
+
+# Determine whether a membership was purchased
+# within 30 days of the campaign
+campaign_data <- campaign_data %>%
+  mutate(
+    follow_up_complete =
+      campaign_date + days(follow_up_days) <= Sys.Date(),
+
+    became_member = !is.na(membership_date) &
+      membership_date >= campaign_date &
+      membership_date <= campaign_date + days(follow_up_days),
+
+    became_member = if_else(
+      follow_up_complete,
+      became_member,
+      NA
+    )
+  )
+
+# Calculate conversion rate by campaign
+campaign_results <- campaign_data %>%
+  filter(targeted, follow_up_complete) %>%
+  group_by(campaign) %>%
+  summarise(
+    customers_targeted = n_distinct(customer_id),
+    new_members = n_distinct(
+      customer_id[became_member %in% TRUE]
+    ),
+    conversion_rate = new_members / customers_targeted,
+    .groups = "drop"
+  ) %>%
+  mutate(
+    conversion_rate = percent(conversion_rate, accuracy = 0.1)
+  )
+
+print(campaign_results)
+
+if (length(missing_packages) > 0) {
+  stop(
+    "Install the following R packages before rendering: ",
+    paste(missing_packages, collapse = ", ")
+  )
+}
+
+library(readr)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(ggrepel)
+library(arrow)
+library(tidyr)
+library(janitor)
+library(leaflet)
+library(htmltools)
+
+# Quarto/knitr will use SVG for ggplot figures. This avoids common Windows
+# PNG-device failures when rendering a long report with many figures.
+knitr::opts_chunk$set(dev = "svg", dpi = 96)
+```
+
+```{r}
+#| label: load-data
+#| message: false
+#| warning: false
+# The preferred source is the processed Parquet file. If it is not present,
+# the code falls back to monthly CSV files in Data/raw. Change data_csv_dir
+# below if your CSV folder is elsewhere.
+data_parquet <- file.path("Data", "processed", "cyclistic_all.parquet")
+data_csv_dir <- file.path("Data", "raw")
+
+parse_cyclistic_datetime <- function(x) {
+  if (inherits(x, "POSIXt")) return(x)
+  if (inherits(x, "Date")) return(as.POSIXct(x, tz = "UTC"))
+  x <- as.character(x)
+  parsed <- suppressWarnings(lubridate::ymd_hms(x, tz = "UTC", quiet = TRUE))
+  bad <- is.na(parsed) & !is.na(x) & nzchar(x)
+  if (any(bad)) {
+    parsed[bad] <- suppressWarnings(lubridate::mdy_hm(x[bad], tz = "UTC", quiet = TRUE))
+  }
+  bad <- is.na(parsed) & !is.na(x) & nzchar(x)
+  if (any(bad)) {
+    parsed[bad] <- suppressWarnings(lubridate::mdy_hms(x[bad], tz = "UTC", quiet = TRUE))
+  }
+  parsed
+}
+
+standardize_cyclistic <- function(df) {
+  names(df) <- janitor::make_clean_names(names(df))
+  required <- c("started_at", "ended_at", "member_casual")
+  missing_required <- setdiff(required, names(df))
+  if (length(missing_required) > 0) {
+    stop(
+      "The Cyclistic data are missing required columns: ",
+      paste(missing_required, collapse = ", "),
+      ". Check the selected Parquet/CSV source."
+    )
+  }
+
+  for (nm in intersect(c("start_station_id", "end_station_id"), names(df))) {
+    df[[nm]] <- as.character(df[[nm]])
+  }
+
+  df$started_at <- parse_cyclistic_datetime(df$started_at)
+  df$ended_at <- parse_cyclistic_datetime(df$ended_at)
+
+  if ("start_lat" %in% names(df)) df$start_lat <- suppressWarnings(as.numeric(df$start_lat))
+  if ("start_lng" %in% names(df)) df$start_lng <- suppressWarnings(as.numeric(df$start_lng))
+  if ("end_lat" %in% names(df)) df$end_lat <- suppressWarnings(as.numeric(df$end_lat))
+  if ("end_lng" %in% names(df)) df$end_lng <- suppressWarnings(as.numeric(df$end_lng))
+
+  df
+}
+
+if (file.exists(data_parquet)) {
+  cyclistic_data <- arrow::read_parquet(data_parquet) |>
+    standardize_cyclistic()
+} else {
+  if (!dir.exists(data_csv_dir)) {
+    stop(
+      "Processed Parquet file not found and CSV folder does not exist. ",
+      "Expected: ", normalizePath(data_parquet, winslash = "/", mustWork = FALSE),
+      " or: ", normalizePath(data_csv_dir, winslash = "/", mustWork = FALSE)
+    )
+  }
+
+  csv_files <- list.files(
+    data_csv_dir,
+    pattern = "\\.csv$",
+    full.names = TRUE,
+    ignore.case = TRUE
+  )
+
+  if (length(csv_files) == 0) {
+    stop("No CSV files were found in: ", normalizePath(data_csv_dir, winslash = "/", mustWork = FALSE))
+  }
+
+  csv_list <- lapply(csv_files, function(f) {
+    readr::read_csv(
+      f,
+      show_col_types = FALSE,
+      progress = FALSE,
+      col_types = readr::cols(
+        .default = readr::col_guess(),
+        started_at = readr::col_character(),
+        ended_at = readr::col_character(),
+        start_station_id = readr::col_character(),
+        end_station_id = readr::col_character()
+      )
+    ) |>
+      standardize_cyclistic()
+  })
+
+  cyclistic_data <- dplyr::bind_rows(csv_list)
+}
+
+if (nrow(cyclistic_data) == 0) {
+  stop("The Cyclistic dataset contains zero rows after loading.")
+}
+```
+
+# Data preparation
+
+Ride length, time-of-day, and seasonal fields are derived from the raw timestamps, and clearly invalid records are identified.
+
+```{r}
+#| label: derive-fields
+cyclistic_data <- cyclistic_data |>
+  mutate(
+    ride_length_min = as.numeric(difftime(ended_at, started_at, units = "mins")),
+    day_of_week = lubridate::wday(started_at, label = TRUE, abbr = TRUE),
+    hour = lubridate::hour(started_at),
+    is_weekend = as.character(day_of_week) %in% c("Sat", "Sun"),
+    year_month = lubridate::floor_date(started_at, "month"),
+    month_num = lubridate::month(started_at),
+    season = case_when(
+      month_num %in% c(12, 1, 2) ~ "Winter",
+      month_num %in% c(3, 4, 5)  ~ "Spring",
+      month_num %in% c(6, 7, 8)  ~ "Summer",
+      month_num %in% c(9, 10, 11) ~ "Fall",
+      TRUE ~ NA_character_
+    ),
+    season = factor(season, levels = c("Spring", "Summer", "Fall", "Winter"))
+  )
+```
+
+```{r}
+#| label: check-data-quality
+cyclistic_data |>
+  summarise(
+    n = n(),
+    n_negative = sum(ride_length_min < 0, na.rm = TRUE),
+    n_over_24h = sum(ride_length_min >= 0 & ride_length_min > 24 * 60, na.rm = TRUE)
+  )
+```
+
+`r sum(cyclistic_data$ride_length_min < 0, na.rm = TRUE)` rides have negative durations, almost certainly due to clock errors, and are excluded from the remaining analysis. A further `r sum(cyclistic_data$ride_length_min >= 0 & cyclistic_data$ride_length_min > 24*60, na.rm = TRUE)` rides exceed 24 hours (up to several weeks); these are flagged but retained, since they may represent legitimate (if unusual) long-term rentals rather than data errors.
+
+Because the underlying monthly files span a schema change (station IDs switch from numeric to alphanumeric codes starting December 2020), all files were read with station ID columns forced to character type before combining, so this is not a source of missing or miscoded data here.
+
+```{r}
+#| label: filter-valid
+cyclistic_valid <- cyclistic_data |> filter(!is.na(ride_length_min), ride_length_min >= 0)
+```
+
+# Ride volume and duration
+
+```{r}
+#| label: duration-summary
+duration_summary <- cyclistic_valid |>
+  group_by(member_casual) |>
+  summarise(
+    n_rides = n(),
+    mean_length_min = mean(ride_length_min, na.rm = TRUE),
+    median_length_min = median(ride_length_min, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+duration_summary
+```
+
+Members account for the majority of rides over the full year (`r format(duration_summary$n_rides[duration_summary$member_casual == "member"], big.mark = ",")` vs. `r format(duration_summary$n_rides[duration_summary$member_casual == "casual"], big.mark = ",")` for casual riders — about 59%/41%), but casual riders take considerably longer trips on average, with roughly double or more the median duration of member rides. This is consistent with casual riders using bikes for leisure trips rather than fast point-to-point travel.
+
+## Seasonality in volume and rider mix
+
+```{r}
+#| label: monthly-trend-data
+monthly_summary <- cyclistic_valid |>
+  group_by(year_month) |>
+  summarise(
+    n_rides = n(),
+    pct_casual = mean(member_casual == "casual") * 100,
+    .groups = "drop"
+  )
+```
+
+```{r}
+#| label: plot-monthly-trend
+monthly_summary |>
+  pivot_longer(c(n_rides, pct_casual), names_to = "metric", values_to = "value") |>
+  mutate(metric = recode(metric, n_rides = "Total rides", pct_casual = "% casual riders")) |>
+  ggplot(aes(year_month, value)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ metric, scales = "free_y", ncol = 1) +
+  labs(x = "Month", y = NULL)
+```
+
+Both total ride volume and the casual share of riders track the seasons closely: rides peak in July–August 2020 (over 600,000/month) and fall to a trough in January–February 2021 (under 100,000/month), while the casual share follows the same shape — roughly 45–49% in summer versus 19–23% in mid-winter. November 2020, the single month used in the earlier version of this report, sat on the declining shoulder of this cycle (34% casual) — a reasonable but not representative middle-ground estimate of the casual share.
+
+# Temporal patterns
+
+## Day of week
+
+```{r}
+#| label: plot-day-of-week
+cyclistic_valid |>
+  count(member_casual, day_of_week) |>
+  group_by(member_casual) |>
+  mutate(pct = n / sum(n) * 100) |>
+  ungroup() |>
+  ggplot(aes(day_of_week, pct, color = member_casual, group = member_casual)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Day of week", y = "% of rider type's rides", color = "Rider type")
+```
+
+Across the full year, member ridership is quite flat by day of week (roughly 13–16% of member rides fall on any given day), with no single sharp peak — this is a more muted pattern than the "Monday peak" seen in the November-only analysis, which did not generalize. Casual ridership is clearly weekend-skewed: it is lowest midweek (roughly 11%) and rises to about 15% on Friday and 23% on Saturday, consistent with leisure use.
+
+## Hour of day
+
+```{r}
+#| label: plot-hour-of-day
+cyclistic_valid |>
+  count(member_casual, is_weekend, hour) |>
+  group_by(member_casual, is_weekend) |>
+  mutate(pct = n / sum(n) * 100) |>
+  ungroup() |>
+  ggplot(aes(hour, pct, color = member_casual)) +
+  geom_line() +
+  facet_wrap(~ ifelse(is_weekend, "Weekend", "Weekday")) +
+  labs(x = "Hour of day", y = "% of rider type's rides", color = "Rider type")
+```
+
+On weekdays, members show a distinct bimodal pattern with a sharp morning spike around 7–8 AM plus a shared afternoon peak near 5 PM, consistent with a commute-to-work-and-back pattern. Casual riders lack the morning spike, instead building gradually toward the same afternoon peak. On weekends, both groups show a similar single midday/early-afternoon peak, with no morning spike for either group. This matches the shape found in the November-only analysis.
+
+## Do these patterns hold across seasons?
+
+```{r}
+#| label: plot-day-of-week-seasonal
+cyclistic_valid |>
+  count(season, member_casual, day_of_week) |>
+  group_by(season, member_casual) |>
+  mutate(pct = n / sum(n) * 100) |>
+  ungroup() |>
+  ggplot(aes(day_of_week, pct, color = member_casual, group = member_casual)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ season) +
+  labs(x = "Day of week", y = "% of rider type's rides", color = "Rider type")
+```
+
+The dataset covers one instance of summer, fall, and winter (Jun–Aug, Sep–Nov, and Dec–Feb 2020/21 respectively), but "Spring" combines partial 2020 (Apr–May) and partial 2021 (Mar–Apr) since the data window doesn't span two full years — a limitation worth keeping in mind when reading the spring panel. With that caveat, the day-of-week shape is consistent across all four seasons: members stay comparatively flat across the week in every season, while casual ridership dips midweek and rises toward Saturday every season, with only a modestly smaller weekend casual peak in winter.
+
+```{r}
+#| label: plot-hour-of-day-seasonal
+cyclistic_valid |>
+  count(season, member_casual, is_weekend, hour) |>
+  group_by(season, member_casual, is_weekend) |>
+  mutate(pct = n / sum(n) * 100) |>
+  ungroup() |>
+  ggplot(aes(hour, pct, color = member_casual)) +
+  geom_line() +
+  facet_grid(season ~ ifelse(is_weekend, "Weekend", "Weekday")) +
+  labs(x = "Hour of day", y = "% of rider type's rides", color = "Rider type")
+```
+
+The weekday commuter pattern also generally replicates: members show a 7–8 AM spike plus a shared late-afternoon peak in spring, summer, and fall, while casual riders lack the morning spike in those three seasons. Winter is the one season where this weakens somewhat — casual riders show a smaller but visible morning uptick alongside members. This could reflect a genuine shift (the few casual riders willing to bike in a Chicago winter may be commuting out of necessity rather than riding for leisure), or could simply be noisier estimates, since winter has far fewer casual rides than the other seasons. On weekends, all four seasons show the same single midday/early-afternoon peak for both groups, with no morning spike.
+
+# Station geography
+
+## Top stations by rider type
+
+```{r}
+#| label: top-start-stations
+top_start_stations <- cyclistic_valid |>
+  filter(!is.na(start_station_name)) |>
+  count(member_casual, start_station_name) |>
+  group_by(member_casual) |>
+  slice_max(n, n = 10) |>
+  ungroup()
+
+top_start_stations |> filter(member_casual == "casual") |> arrange(desc(n))
+```
+
+```{r}
+#| label: top-start-stations-member
+top_start_stations |> filter(member_casual == "member") |> arrange(desc(n))
+```
+
+Casual riders' top start stations (e.g., Streeter Dr & Grand Ave, Lake Shore Dr & Monroe St, Millennium Park, Theater on the Lake, Michigan Ave corridor stations) remain concentrated at lakefront parks and tourist landmarks, matching the November-only finding. Members' top start stations (e.g., Broadway & Barry Ave, Dearborn St & Erie St, the Wells St corridor, Kingsbury St & Kinzie St) remain concentrated in dense North Side residential/business districts, consistent with commuting. Unlike the November-only analysis, the two top-10 lists are no longer fully distinct: Clark St & Elm St and Theater on the Lake now appear on both lists over the full year, suggesting a modest, genuinely mixed-use minority of high-volume stations rather than a perfectly clean split.
+
+## Round trips
+
+```{r}
+#| label: round-trip-rate
+cyclistic_valid |>
+  filter(!is.na(start_station_name), !is.na(end_station_name)) |>
+  group_by(member_casual) |>
+  summarise(
+    n = n(),
+    pct_round_trip = mean(start_station_name == end_station_name) * 100,
+    .groups = "drop"
+  )
+```
+
+Casual riders return to their starting station roughly three times more often than members do (about 18% vs. 6%), essentially the same ratio found in the November-only analysis. Combined with the near-complete overlap between casual riders' top start and end stations, this suggests casual riders frequently make loop trips within the lakefront/tourist corridor rather than one-way, point-to-point trips — and that this behavior is stable across the year, not a winter-specific pattern.
+
+## Spatial distribution
+
+```{r}
+#| label: station-map-data
+station_summary <- cyclistic_valid |>
+  filter(!is.na(start_lat), !is.na(start_lng), !is.na(start_station_name)) |>
+  group_by(start_station_name) |>
+  summarise(
+    lat = median(start_lat),
+    lng = median(start_lng),
+    n_rides = n(),
+    pct_casual = mean(member_casual == "casual") * 100,
+    .groups = "drop"
+  )
+```
+
+```{r}
+#| label: station-map
+#| echo: false
+# Interactive Leaflet map. Hover over a circle for a station summary;
+# click a circle for a fuller station profile. Circle size reflects ride volume.
+
+# Protect against missing/non-finite coordinates and invalid counts.
+map_stations <- station_summary |>
+  filter(
+    is.finite(lat), is.finite(lng),
+    between(lat, -90, 90), between(lng, -180, 180),
+    !is.na(n_rides), n_rides > 0,
+    !is.na(pct_casual)
+  ) |>
+  mutate(
+    pct_member = 100 - pct_casual,
+    hover_text = paste0(
+      "<strong>", htmlEscape(start_station_name), "</strong><br>",
+      "Total rides: ", scales::comma(n_rides), "<br>",
+      "Casual rides: ", round(pct_casual, 1), "%<br>",
+      "Member rides: ", round(pct_member, 1), "%"
+    ),
+    popup_text = paste0(
+      "<div style='min-width:210px'><strong>", htmlEscape(start_station_name),
+      "</strong><hr style='margin:5px 0'>",
+      "<b>Total start rides:</b> ", scales::comma(n_rides), "<br>",
+      "<b>Casual share:</b> ", round(pct_casual, 1), "%<br>",
+      "<b>Member share:</b> ", round(pct_member, 1), "%</div>"
+    )
+  )
+
+if (nrow(map_stations) == 0) {
+  cat("No valid station coordinates are available for the interactive map.")
+} else {
+  casual_palette <- colorNumeric(
+    palette = c("#1b9e77", "#fdae61", "#d95f02"),
+    domain = c(0, 100),
+    na.color = "#808080"
+  )
+  radius_values <- 3 + 8 * sqrt(map_stations$n_rides / max(map_stations$n_rides))
+
+  leaflet(data = map_stations, options = leafletOptions(preferCanvas = TRUE)) |>
+    addProviderTiles(providers$CartoDB.Positron) |>
+    addCircleMarkers(
+      lng = ~lng,
+      lat = ~lat,
+      radius = radius_values,
+      stroke = TRUE,
+      weight = 1,
+      color = "#ffffff",
+      opacity = 0.95,
+      fillColor = ~casual_palette(pct_casual),
+      fillOpacity = 0.78,
+      label = lapply(map_stations$hover_text, HTML),
+      labelOptions = labelOptions(
+        direction = "auto",
+        textsize = "12px",
+        opacity = 0.95,
+        sticky = TRUE
+      ),
+      popup = lapply(map_stations$popup_text, HTML),
+      group = "Start stations"
+    ) |>
+    addLegend(
+      position = "bottomright",
+      pal = casual_palette,
+      values = ~pct_casual,
+      title = "% of rides by casual riders",
+      labFormat = labelFormat(suffix = "%"),
+      opacity = 0.9
+    ) |>
+    addControl(
+      html = HTML("<div style='background:white;padding:6px 9px;border-radius:4px;box-shadow:0 1px 4px #999;font-size:12px'><b>Interactive station map</b><br>Hover for summary · Click for details<br>Circle size = ride volume</div>"),
+      position = "topright"
+    )
+}
+```
+
+
+**How to use the interactive map:** hover over a station circle to see its name, total start rides, and casual/member percentages. Click a circle for a station detail popup. Larger circles represent stations with more rides; the color scale runs from green (lower casual share, more member-heavy) to orange (higher casual share, more casual-heavy). The map uses an online basemap, so an internet connection is needed when viewing the rendered HTML. If the map does not appear, install the packages listed in the setup chunk and render the report to HTML in Quarto/RStudio.
+
+## Do the station patterns hold across seasons?
+
+```{r}
+#| label: round-trip-rate-seasonal
+round_trip_seasonal <- cyclistic_valid |>
+  filter(!is.na(start_station_name), !is.na(end_station_name)) |>
+  group_by(season, member_casual) |>
+  summarise(
+    n = n(),
+    pct_round_trip = mean(start_station_name == end_station_name) * 100,
+    .groups = "drop"
+  )
+
+round_trip_seasonal |>
+  ggplot(aes(season, pct_round_trip, color = member_casual, group = member_casual)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Season", y = "% round trips", color = "Rider type")
+```
+
+Casual riders' round-trip rate is highest in spring and summer (roughly 20%), declines in fall (~14%), and is lowest in winter (~13%) — still consistently well above members' round-trip rate, which stays flat at 5–7% in every season. So the *ratio* between the two groups is stable (casual riders remain 2.7–3.2x more likely than members to round-trip in every season), but the loop-riding behavior itself is somewhat more pronounced in warmer months, consistent with lakefront recreational riding.
+
+```{r}
+#| label: top-casual-stations-seasonal
+top_casual_by_season <- cyclistic_valid |>
+  filter(!is.na(start_station_name), member_casual == "casual") |>
+  count(season, start_station_name) |>
+  group_by(season) |>
+  slice_max(n, n = 5) |>
+  ungroup()
+
+top_casual_by_season |>
+  mutate(station_label = paste(start_station_name, season)) |>
+  ggplot(aes(n, reorder(station_label, n))) +
+  geom_col() +
+  facet_wrap(~ season, scales = "free", ncol = 2) +
+  scale_y_discrete(labels = function(x) sub(" (Spring|Summer|Fall|Winter)$", "", x, fixed = FALSE)) +
+  labs(x = "Rides", y = NULL)
+```
+
+This is the clearest seasonal shift found in the whole analysis. In spring, summer, and fall, casual riders' top stations are the familiar lakefront/tourist set (Lake Shore Dr & Monroe St, Streeter Dr & Grand Ave, Millennium Park, Theater on the Lake). In winter, that pattern disappears: casual riders' top stations become Lake Shore Dr & Monroe St and Millennium Park alongside Clark St & Elm St, Wells St & Elm St, and Wells St & Huron St — the same downtown/near-north stations that dominate *members'* top-10 list year-round. Combined with the modest winter morning commute signal seen earlier in the hour-of-day breakdown, this suggests that the small population of casual riders who ride in winter behave more like members (functional, downtown-oriented trips) rather than like the leisure/tourist casual riders who dominate the warmer months. The lakefront/tourist framing in the recommendations below applies mainly to casual ridership from spring through fall, not winter.
+
+# Key findings
+
+- Members generate about 59% of total rides over the full year, but casual riders take considerably longer trips on average (median ~21 vs. ~11 minutes).
+- Ride volume and the casual share of riders both follow a clear seasonal cycle: volume and casual share peak together in summer (over 600,000 rides/month, ~45–49% casual) and trough together in winter (under 100,000 rides/month, ~19–23% casual). A single month — such as November, used in the earlier version of this report — sits partway down this cycle and does not represent the full range.
+- The commuter/leisure behavioral split is not just a November artifact: casual ridership is weekend-skewed and members' weekday ridership shows a 7–8 AM commute spike absent from casual riders, and this pattern holds in spring, summer, and fall. Winter is a partial exception, where the small remaining casual ridership shows a modest morning uptick resembling commuting.
+- Casual riders' most popular stations remain lakefront parks and tourist landmarks, largely — though no longer entirely — distinct from members' residential/business-district stations.
+- Casual riders are about three times more likely to complete a round trip (same start and end station) than members — a ratio that holds in every season — though the round-trip rate itself is higher in spring/summer (~20%) than fall/winter (~13–14%), consistent with lakefront looping being a warm-weather behavior.
+- Winter casual riders look structurally different from other-season casual riders: in spring, summer, and fall their top stations are the lakefront/tourist set, but in winter that set is replaced by the same downtown/near-north stations members use. Combined with winter casual riders' modest morning-commute uptick, this suggests the small population still riding as casual in winter are functional, near-member-like riders rather than leisure tourists — a distinct sub-segment worth treating separately from the summer casual majority.
+
+# Recommendations
+
+Based on the full-year patterns above, the following directions may help convert casual riders into annual members:
+
+1. **Target lakefront/tourist stations with membership marketing — but mainly spring through fall.** Casual ridership concentrates at specific, identifiable stations (e.g., Streeter Dr & Grand Ave, Millennium Park, the Michigan Ave corridor) during the warmer months; in-app prompts or on-site signage at these locations could reach a large share of casual riders directly. This targeting logic does not carry over to winter, when casual riders are no longer concentrated at lakefront stations.
+2. **Weight marketing spend toward the summer season.** Since casual ridership is concentrated in the summer months (peaking at nearly half of all rides being casual in July–August, versus under a quarter in winter), campaigns timed to spring/summer — rather than spread evenly across the year — should reach substantially more of the target segment per dollar spent.
+3. **Promote weekend-oriented membership options.** Casual ridership peaks on weekends in every season observed; a membership tier emphasizing weekend value (rather than weekday commuting) may appeal more directly to this segment's actual, and consistent, usage pattern.
+4. **Highlight loop/leisure use cases in messaging — for the spring–fall casual majority.** Casual riders' round-trip rate is highest in warmer months, suggesting many are using bikes for recreation rather than transportation; membership marketing that emphasizes leisure and lakefront access (not just commuting savings) may resonate more with this group.
+5. **Consider a separate, commuter-style pitch for winter casual riders.** The small group of casual riders active in winter rides from downtown/near-member stations with a mild morning-commute pattern, more closely resembling members than the summer casual/tourist population. A single "leisure/lakefront" message aimed at all casual riders would likely miss this sub-segment; a functional, commuter-value pitch (e.g., cost savings vs. per-ride pricing) may convert them more effectively.
+
+These recommendations are now based on a full year of data (April 2020–April 2021) rather than a single month, and the core commuter/leisure distinction between members and casual riders appears robust across seasons — except that "casual" itself is not one consistent behavioral group year-round: it functions as a leisure/tourist segment in warmer months and a smaller, more member-like functional segment in winter. Remaining open questions include whether the small set of stations popular with both rider types (e.g., Clark St & Elm St, Theater on the Lake) represent a distinct, mixed-use segment worth targeting differently, and whether the winter casual pattern is stable across multiple winters or specific to this one.
+
+
+# Conversion rate: measuring membership growth
+
+## What the current trip data can tell us
+
+The public Cyclistic trip files identify each trip as `member` or `casual`, but they do not provide a persistent customer identifier or link a casual rider to a later membership purchase. Therefore, the current dataset **cannot calculate the actual casual-to-member conversion rate**. A `ride_id` represents a trip, not a unique customer, and the percentage of rides made by casual riders is not a conversion rate.
+
+The current trip data can still support conversion planning by identifying when and where casual rides are concentrated. For example, the monthly casual share and weekend/station analyses above help inform the timing and placement of targeted campaigns. These are indicators for targeting—not evidence that a rider converted.
+
+## Data needed to measure actual conversion
+
+Cyclistic would need customer-level campaign and membership records that can be linked using a privacy-protected customer identifier. At minimum, the data should include:
+
+- `customer_id`: stable, privacy-protected identifier for a customer.
+- `campaign`: campaign or offer shown to the customer.
+- `targeted`: whether the customer was included in the campaign.
+- `became_member`: whether the customer purchased a new annual membership within a defined follow-up window.
+- A campaign date and membership purchase date, or equivalent fields, to define the conversion window (for example, within 30 days).
+
+The conversion rate is:
+
+\[
+\text{Conversion rate (\%)} =
+\frac{\text{Unique targeted casual customers who became members}}
+{\text{Unique eligible casual customers targeted}} \times 100
+\]
+
+Existing members should not count as new conversions. Cyclistic should also define the campaign follow-up window before calculating this metric.
+
+## R code: calculate and visualize actual conversion when campaign data is available
+
+The code below looks for an optional file named `Data/processed/cyclistic_campaign_conversion.csv`. This is a **separate campaign dataset, not part of the public trip files**. The code is designed to let this report render even when that additional file has not yet been supplied. If the file is available, it calculates conversion rates and produces a campaign comparison chart. If it is missing, the report clearly states why actual conversion cannot be calculated.
+
+Expected columns: `customer_id`, `campaign`, `targeted`, and `became_member`. The last two columns should contain logical values (`TRUE`/`FALSE`) or equivalent `Yes`/`No` values. Each row should represent one customer-campaign assignment, not one bike trip.
+
+```{r}
+#| label: conversion-rate-analysis
+#| fig-width: 8
+#| fig-height: 5
+campaign_file <- file.path(
+  "Data", "processed", "cyclistic_campaign_conversion.csv"
+)
+
+if (file.exists(campaign_file)) {
+  campaign_data <- readr::read_csv(
+    campaign_file,
+    show_col_types = FALSE
+  ) |>
+    janitor::clean_names()
+
+  required_campaign_columns <- c(
+    "customer_id", "campaign", "targeted", "became_member"
+  )
+  missing_campaign_columns <- setdiff(
+    required_campaign_columns, names(campaign_data)
+  )
+
+  if (length(missing_campaign_columns) > 0) {
+    stop(
+      "Campaign file is missing required columns: ",
+      paste(missing_campaign_columns, collapse = ", ")
+    )
+  }
+
+  # Normalize common Yes/No and TRUE/FALSE representations.
+  to_logical_flag <- function(x, column_name) {
+    if (is.logical(x)) return(x)
+    value <- tolower(trimws(as.character(x)))
+    result <- dplyr::case_when(
+      value %in% c("true", "t", "yes", "y", "1") ~ TRUE,
+      value %in% c("false", "f", "no", "n", "0") ~ FALSE,
+      TRUE ~ NA
+    )
+    if (any(is.na(result) & !is.na(x))) {
+      warning(
+        "Some values in ", column_name,
+        " could not be interpreted as TRUE/FALSE and will be excluded."
+      )
+    }
+    result
+  }
+
+  campaign_data <- campaign_data |>
+    mutate(
+      targeted = to_logical_flag(targeted, "targeted"),
+      became_member = to_logical_flag(became_member, "became_member")
+    ) |>
+    filter(
+      !is.na(customer_id), !is.na(campaign),
+      !is.na(targeted), !is.na(became_member)
+    )
+
+  # A customer should count only once per campaign.
+  # If duplicate customer-campaign rows disagree, resolve them upstream
+  # using the campaign's official assignment and purchase records.
+  duplicate_assignments <- campaign_data |>
+    count(customer_id, campaign) |>
+    filter(n > 1)
+
+  if (nrow(duplicate_assignments) > 0) {
+    stop(
+      "Duplicate customer_id + campaign records were found. ",
+      "Deduplicate or resolve conflicting records before calculating conversion."
+    )
+  }
+
+  conversion_summary <- campaign_data |>
+    filter(targeted) |>
+    group_by(campaign) |>
+    summarise(
+      customers_targeted = n_distinct(customer_id),
+      customers_converted = n_distinct(
+        customer_id[became_member]
+      ),
+      conversion_rate = if_else(
+        customers_targeted > 0,
+        100 * customers_converted / customers_targeted,
+        NA_real_
+      ),
+      .groups = "drop"
+    )
+
+  print(conversion_summary)
+
+  ggplot(
+    conversion_summary,
+    aes(x = reorder(campaign, conversion_rate), y = conversion_rate)
+  ) +
+    geom_col() +
+    geom_text(
+      aes(label = ifelse(
+        is.na(conversion_rate), "N/A",
+        paste0(round(conversion_rate, 1), "%")
+      )),
+      hjust = -0.15,
+      size = 4
+    ) +
+    coord_flip() +
+    scale_y_continuous(
+      name = "Conversion rate (%)",
+      limits = c(0, max(100, conversion_summary$conversion_rate, na.rm = TRUE)),
+      expand = expansion(mult = c(0, 0.12))
+    ) +
+    labs(
+      title = "Annual Membership Conversion by Campaign",
+      subtitle = "Among eligible casual customers targeted by each campaign",
+      x = "Campaign"
+    ) +
+    theme_minimal(base_size = 12)
+
+} else {
+  cat(
+    "**Actual conversion rate not calculated:** the public trip dataset ",
+    "does not identify unique customers or link rides to membership purchases. ",
+    "To enable this analysis, add `Data/processed/",
+    "cyclistic_campaign_conversion.csv` with the required customer-level ",
+    "campaign fields described above. The existing trip data can guide ",
+    "campaign targeting, but its casual-ride share must not be reported ",
+    "as a membership conversion rate."
+  )
+}
+```
+
+## How to interpret and use this metric
+
+Once customer-level campaign data is available, compare the conversion rates and the number of customers converted across campaigns. A higher conversion rate is useful, but stakeholders should also review campaign cost, total conversions, membership retention, and revenue before deciding which campaign to scale. If campaigns are tested against a comparable holdout group, Cyclistic can better estimate whether the campaign caused additional conversions rather than simply reaching people who were already likely to join.
+
+For this version of the case study, the defensible conclusion is that the trip data reveals **promising segments and times to target**, while actual conversion remains a future measurement requiring linked campaign and membership data.
+
+
+# Appendix: full code, comments, and recomputed results
+
+Code is hidden throughout the narrative above so it reads as a standard report. This appendix is self-contained: it reads the raw combined dataset again and recomputes every table and plot shown above from scratch, with source code and comments visible, independent of the objects created in the narrative sections. It exists for readers who want the full technical detail without it interrupting the narrative flow, and it should reproduce identical numbers to the sections above (any difference would indicate a bug in one version or the other).
+
+## Data loading and preparation
+
+```{r}
+#| label: appx-load-data
+#| echo: true
+data_appx <- if (file.exists(data_parquet)) {
+  arrow::read_parquet(data_parquet)
+} else {
+  csv_files_appx <- list.files(data_csv_dir, pattern = "\\.csv$", full.names = TRUE, ignore.case = TRUE)
+  dplyr::bind_rows(lapply(csv_files_appx, function(f) {
+    readr::read_csv(
+      f, show_col_types = FALSE, progress = FALSE,
+      col_types = readr::cols(
+        .default = readr::col_guess(),
+        started_at = readr::col_character(),
+        ended_at = readr::col_character(),
+        start_station_id = readr::col_character(),
+        end_station_id = readr::col_character()
+      )
+    )
+  }))
+}
+data_appx <- standardize_cyclistic(data_appx)
+```
+
+```{r}
+#| label: appx-derive-fields
+#| echo: true
+data_appx <- data_appx |>
+  mutate(
+    ride_length_min = as.numeric(difftime(ended_at, started_at, units = "mins")),
+    day_of_week = lubridate::wday(started_at, label = TRUE, abbr = TRUE),
+    hour = lubridate::hour(started_at),
+    is_weekend = as.character(day_of_week) %in% c("Sat", "Sun"),
+    year_month = lubridate::floor_date(started_at, "month"),
+    month_num = lubridate::month(started_at),
+    # "Spring" mixes partial 2020 and partial 2021 since the data window
+    # doesn't span two full years -- see caveat in the main text.
+    season = case_when(
+      month_num %in% c(12, 1, 2) ~ "Winter",
+      month_num %in% c(3, 4, 5)  ~ "Spring",
+      month_num %in% c(6, 7, 8)  ~ "Summer",
+      month_num %in% c(9, 10, 11) ~ "Fall",
+      TRUE ~ NA_character_
+    ),
+    season = factor(season, levels = c("Spring", "Summer", "Fall", "Winter"))
+  )
+```
+
+```{r}
+#| label: appx-valid-data
+#| echo: true
+# Keep the same validity rule used in the narrative analysis.
+valid_appx <- data_appx |>
+  filter(!is.na(ride_length_min), ride_length_min >= 0)
+```
+
+```{r}
+#| label: appx-quality-check
+#| echo: true
+# Negative durations are clock errors and get dropped; long (>24h) rides are
+# flagged but kept since they may be legitimate long-term rentals.
+data_appx |>
+  summarise(
+    n = n(),
+    n_negative = sum(ride_length_min < 0, na.rm = TRUE),
+    n_over_24h = sum(ride_length_min >= 0 & ride_length_min > 24 * 60, na.rm = TRUE)
+  )
+```
+
+
+
+## Ride volume and duration
+
+```{r}
+#| label: appx-duration-summary
+#| echo: true
+valid_appx |>
+  group_by(member_casual) |>
+  summarise(
+    n_rides = n(),
+    mean_length_min = mean(ride_length_min, na.rm = TRUE),
+    median_length_min = median(ride_length_min, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+```{r}
+#| label: appx-monthly-trend
+#| echo: true
+valid_appx |>
+  group_by(year_month) |>
+  summarise(
+    n_rides = n(),
+    pct_casual = mean(member_casual == "casual") * 100,
+    .groups = "drop"
+  ) |>
+  pivot_longer(c(n_rides, pct_casual), names_to = "metric", values_to = "value") |>
+  mutate(metric = recode(metric, n_rides = "Total rides", pct_casual = "% casual riders")) |>
+  ggplot(aes(year_month, value)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ metric, scales = "free_y", ncol = 1) +
+  labs(x = "Month", y = NULL)
+```
+
+## Temporal patterns
+
+```{r}
+#| label: appx-day-of-week
+#| echo: true
+valid_appx |>
+  count(member_casual, day_of_week) |>
+  group_by(member_casual) |>
+  mutate(pct = n / sum(n) * 100) |>
+  ungroup() |>
+  ggplot(aes(day_of_week, pct, color = member_casual, group = member_casual)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Day of week", y = "% of rider type's rides", color = "Rider type")
+```
+
+```{r}
+#| label: appx-hour-of-day
+#| echo: true
+valid_appx |>
+  count(member_casual, is_weekend, hour) |>
+  group_by(member_casual, is_weekend) |>
+  mutate(pct = n / sum(n) * 100) |>
+  ungroup() |>
+  ggplot(aes(hour, pct, color = member_casual)) +
+  geom_line() +
+  facet_wrap(~ ifelse(is_weekend, "Weekend", "Weekday")) +
+  labs(x = "Hour of day", y = "% of rider type's rides", color = "Rider type")
+```
+
+```{r}
+#| label: appx-day-of-week-seasonal
+#| echo: true
+valid_appx |>
+  count(season, member_casual, day_of_week) |>
+  group_by(season, member_casual) |>
+  mutate(pct = n / sum(n) * 100) |>
+  ungroup() |>
+  ggplot(aes(day_of_week, pct, color = member_casual, group = member_casual)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ season) +
+  labs(x = "Day of week", y = "% of rider type's rides", color = "Rider type")
+```
+
+```{r}
+#| label: appx-hour-of-day-seasonal
+#| echo: true
+valid_appx |>
+  count(season, member_casual, is_weekend, hour) |>
+  group_by(season, member_casual, is_weekend) |>
+  mutate(pct = n / sum(n) * 100) |>
+  ungroup() |>
+  ggplot(aes(hour, pct, color = member_casual)) +
+  geom_line() +
+  facet_grid(season ~ ifelse(is_weekend, "Weekend", "Weekday")) +
+  labs(x = "Hour of day", y = "% of rider type's rides", color = "Rider type")
+```
+
+## Station geography
+
+```{r}
+#| label: appx-top-stations
+#| echo: true
+top_stations_appx <- valid_appx |>
+  filter(!is.na(start_station_name)) |>
+  count(member_casual, start_station_name) |>
+  group_by(member_casual) |>
+  slice_max(n, n = 10) |>
+  ungroup()
+
+top_stations_appx |> filter(member_casual == "casual") |> arrange(desc(n))
+top_stations_appx |> filter(member_casual == "member") |> arrange(desc(n))
+```
+
+```{r}
+#| label: appx-round-trip
+#| echo: true
+valid_appx |>
+  filter(!is.na(start_station_name), !is.na(end_station_name)) |>
+  group_by(member_casual) |>
+  summarise(
+    n = n(),
+    pct_round_trip = mean(start_station_name == end_station_name) * 100,
+    .groups = "drop"
+  )
+```
+
+```{r}
+#| label: appx-station-map
+#| echo: true
+#| fig-width: 8
+#| fig-height: 7
+station_summary_appx <- valid_appx |>
+  filter(!is.na(start_lat), !is.na(start_lng), !is.na(start_station_name)) |>
+  group_by(start_station_name) |>
+  summarise(
+    lat = median(start_lat),
+    lng = median(start_lng),
+    n_rides = n(),
+    pct_casual = mean(member_casual == "casual") * 100,
+    .groups = "drop"
+  )
+
+# Static scatter map instead of an interactive leaflet/tile map, so the
+# figure renders without needing live network access to a tile server.
+# Labels use the top 3 casual and top 3 member stations (from
+# top_stations_appx above), matching the split ranking discussed in the
+# narrative text, rather than overall combined-volume top stations.
+labeled_station_names_appx <- top_stations_appx |>
+  group_by(member_casual) |>
+  slice_max(n, n = 3) |>
+  ungroup() |>
+  pull(start_station_name) |>
+  unique()
+
+top_labeled_stations_appx <- station_summary_appx |>
+  filter(start_station_name %in% labeled_station_names_appx)
+
+set.seed(4821)
+ggplot(station_summary_appx, aes(lng, lat, size = n_rides, color = pct_casual)) +
+  geom_point(alpha = 0.6) +
+  ggrepel::geom_text_repel(
+    data = top_labeled_stations_appx,
+    aes(label = start_station_name),
+    color = "black", size = 2.6, max.overlaps = Inf,
+    segment.color = "grey40", segment.size = 0.3,
+    box.padding = 1.4, point.padding = 0.4, force = 40, force_pull = 0.3,
+    min.segment.length = 0, seed = 4821, max.time = 3, max.iter = 40000
+  ) +
+  scale_color_gradient(low = "#1b9e77", high = "#d95f02", limits = c(0, 100)) +
+  scale_size_area(max_size = 6, guide = "none") +
+  scale_x_continuous(expand = expansion(mult = 0.25)) +
+  scale_y_continuous(expand = expansion(mult = 0.15)) +
+  coord_quickmap() +
+  labs(
+    x = "Longitude", y = "Latitude",
+    color = "% Casual riders",
+    title = "Start stations by ride volume and casual/member mix",
+    subtitle = "Labeled: top 3 casual + top 3 member start stations"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| label: appx-round-trip-seasonal
+#| echo: true
+valid_appx |>
+  filter(!is.na(start_station_name), !is.na(end_station_name)) |>
+  group_by(season, member_casual) |>
+  summarise(
+    n = n(),
+    pct_round_trip = mean(start_station_name == end_station_name) * 100,
+    .groups = "drop"
+  ) |>
+  ggplot(aes(season, pct_round_trip, color = member_casual, group = member_casual)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Season", y = "% round trips", color = "Rider type")
+```
+
+```{r}
+#| label: appx-top-casual-seasonal
+#| echo: true
+valid_appx |>
+  filter(!is.na(start_station_name), member_casual == "casual") |>
+  count(season, start_station_name) |>
+  group_by(season) |>
+  slice_max(n, n = 5) |>
+  ungroup() |>
+  mutate(station_label = paste(start_station_name, season)) |>
+  ggplot(aes(n, reorder(station_label, n))) +
+  geom_col() +
+  facet_wrap(~ season, scales = "free", ncol = 2) +
+  scale_y_discrete(labels = function(x) sub(" (Spring|Summer|Fall|Winter)$", "", x, fixed = FALSE)) +
+  labs(x = "Rides", y = NULL)
+```
